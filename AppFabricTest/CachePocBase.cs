@@ -1,10 +1,7 @@
-﻿using Microsoft.ApplicationServer.Caching;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TagCache.Redis;
 
 namespace AppFabricTest
 {
@@ -15,9 +12,8 @@ namespace AppFabricTest
         protected int _dimensionCount;
         protected byte[] _data;
         protected Dictionary<string, object> _performanceTracker;
-        protected DataCacheFactory _myCacheFactory;
-        protected DataCache _myDefaultCache;
-        protected DataCacheServerEndpoint _endPoint;
+        protected RedisCacheProvider _myDefaultCache;
+        protected RedisConnectionManager _endPoint;
 
         protected Stopwatch _stopWatch;
 
@@ -39,7 +35,7 @@ namespace AppFabricTest
         protected const string _keySumDel = "Sum del ms";
         protected const string _keyMemoryUsage = "Max bytes used during a dataset delete";
 
-        public virtual void Initialize(DataCacheServerEndpoint endPoint, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker)
+        public virtual void Initialize(RedisConnectionManager endPoint, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker)
         {
             _endPoint = endPoint;
             _regionName = regionName;
@@ -56,33 +52,13 @@ namespace AppFabricTest
 
         protected void FlushCache()
         {
-            foreach (var region in _myDefaultCache.GetSystemRegions())
-            {
-                _myDefaultCache.ClearRegion(region);
-            }
-
-            for (var i = 0; i < _datasetCount; i++)
-            {
-                _myDefaultCache.RemoveRegion("Region" + i);
-            }
+            //TODO: Flush cache implementation
         }
 
         protected void PrepareClient()
         {
-            List<DataCacheServerEndpoint> servers = new List<DataCacheServerEndpoint>(1)
-            {
-                _endPoint
-            };
-
-            DataCacheFactoryConfiguration configuration = new DataCacheFactoryConfiguration
-            {
-                Servers = servers,
-                LocalCacheProperties = new DataCacheLocalCacheProperties()
-            };
-
-            DataCacheClientLogManager.ChangeLogLevel(TraceLevel.Off);
-            _myCacheFactory = new DataCacheFactory(configuration);
-            _myDefaultCache = _myCacheFactory.GetCache("default");
+            var config = new CacheConfiguration(_endPoint);
+            _myDefaultCache = new RedisCacheProvider(config);
         }
 
         protected void RecordStatistics(List<long> addList, List<long> getAndRemoveList, List<long> memUsageList, string regionName = null)

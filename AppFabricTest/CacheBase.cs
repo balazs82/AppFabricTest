@@ -1,10 +1,6 @@
-﻿using Microsoft.ApplicationServer.Caching;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TagCache.Redis;
 
 namespace AppFabricTest
 {
@@ -16,11 +12,11 @@ namespace AppFabricTest
         private readonly int _dimensionCount = 1;
         private readonly byte[] _data = new byte[300000];
         private readonly ICachePoc _cacheStrategy;
-        private readonly DataCacheServerEndpoint _endPoint;
+        private readonly RedisConnectionManager _endPoint;
                 
         private Dictionary<string, Dictionary<string, object>> _performanceTracker;
-        
-        public CacheBenchmark(ICachePoc cacheStrategy, DataCacheServerEndpoint endPoint, int datasetCount, int dimensionCount, Dictionary<string, Dictionary<string, object>> performanceTracker)
+
+        public CacheBenchmark(ICachePoc cacheStrategy, RedisConnectionManager endPoint, int datasetCount, int dimensionCount, Dictionary<string, Dictionary<string, object>> performanceTracker)
         {
             _endPoint = endPoint;
             _datasetCount = datasetCount;

@@ -1,19 +1,19 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using AppFabricTest;
-using Microsoft.ApplicationServer.Caching;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TagCache.Redis;
 
 namespace CacheTest
 {
     [TestClass]
     public class CacheTests
     {
-        private DataCacheServerEndpoint Endpoint
+        private RedisConnectionManager Endpoint
         {
-            get { return new DataCacheServerEndpoint("localhost", 22233); }
+            get { return new RedisConnectionManager("127.0.0.1:6379"); }
         }
 
         [TestMethod]
@@ -23,56 +23,18 @@ namespace CacheTest
             int dimensionCount = 10;
 
             Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
-            CacheBenchmark benchmark1 = new CacheBenchmark(new CachePocNamedRegionForAllDatasetsUsingTags(), Endpoint, datasetCount, dimensionCount, performanceTracker);
+
+            CacheBenchmark benchmark1 = new CacheBenchmark(new CachePocUsingTags(), Endpoint, datasetCount, dimensionCount, performanceTracker);
             benchmark1.DoWork();
 
-            CacheBenchmark benchmark2 = new CacheBenchmark(new CachePocNamedRegionUsingTags(), Endpoint, datasetCount, dimensionCount, performanceTracker);
-            benchmark2.DoWork();
-
-            CacheBenchmark benchmark3 = new CacheBenchmark(new CachePocKeysDatasetCodesStoredInDb(), Endpoint, datasetCount, dimensionCount, performanceTracker);
-            benchmark3.DoWork();
-
-            CacheBenchmark benchmark4 = new CacheBenchmark(new CachePocChangeTracking(), Endpoint, datasetCount, dimensionCount, performanceTracker);
-            benchmark4.DoWork();
-
             ComparedResultsToOutput(performanceTracker);
-        }
-
-        [TestMethod]
-        public void CachePocTest_NamedRegionForAllDatasetsUsingTags()
-        {
-            Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
-            CacheBenchmark benchmark = new CacheBenchmark(new CachePocNamedRegionForAllDatasetsUsingTags(), Endpoint, 1000, 10, performanceTracker);
-            benchmark.DoWork();
-
-            ResultsToOutput(performanceTracker);
         }
 
         [TestMethod]
         public void CachePocTest_NamedRegionUsingTags()
         {
             Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
-            CacheBenchmark benchmark = new CacheBenchmark(new CachePocNamedRegionUsingTags(), Endpoint, 10, 10, performanceTracker);
-            benchmark.DoWork();
-
-            ResultsToOutput(performanceTracker);
-        }
-
-        [TestMethod]
-        public void CachePocTest_KeysDatasetCodesStoredInDb()
-        {
-            Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
-            CacheBenchmark benchmark = new CacheBenchmark(new CachePocKeysDatasetCodesStoredInDb(), Endpoint, 1000, 10, performanceTracker);
-            benchmark.DoWork();
-
-            ResultsToOutput(performanceTracker);
-        }
-
-        [TestMethod]
-        public void CachePocTest_ChangeTracking()
-        {
-            Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
-            CacheBenchmark benchmark = new CacheBenchmark(new CachePocChangeTracking(), Endpoint, 10, 10, performanceTracker);
+            CacheBenchmark benchmark = new CacheBenchmark(new CachePocUsingTags(), Endpoint, 10, 10, performanceTracker);
             benchmark.DoWork();
 
             ResultsToOutput(performanceTracker);
