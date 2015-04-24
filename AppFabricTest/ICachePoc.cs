@@ -1,14 +1,10 @@
-﻿using Microsoft.ApplicationServer.Caching;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using StackExchange.Redis;
 
 namespace AppFabricTest
 {
     public interface ICachePoc: ICacheBenchmark
     {
-        void Initialize(DataCacheServerEndpoint endPoint, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker);
+        void Initialize(ConnectionMultiplexer redisConnectionMultiplexer, string redisConnectionString, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker);
     }
 }
