@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using TagCache.Redis;
+using StackExchange.Redis;
 
 namespace AppFabricTest
 {
@@ -12,8 +12,9 @@ namespace AppFabricTest
         protected int _dimensionCount;
         protected byte[] _data;
         protected Dictionary<string, object> _performanceTracker;
-        protected RedisCacheProvider _myDefaultCache;
-        protected RedisConnectionManager _endPoint;
+        protected IDatabase _myDefaultCache;
+        protected ConnectionMultiplexer _redisConnectionMultiplexer;
+        protected string _redisConnectionString;
 
         protected Stopwatch _stopWatch;
 
@@ -35,9 +36,10 @@ namespace AppFabricTest
         protected const string _keySumDel = "Sum del ms";
         protected const string _keyMemoryUsage = "Max bytes used during a dataset delete";
 
-        public virtual void Initialize(RedisConnectionManager endPoint, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker)
+        public virtual void Initialize(ConnectionMultiplexer redisConnectionMultiplexer, string redisConnectionString, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker)
         {
-            _endPoint = endPoint;
+            _redisConnectionMultiplexer = redisConnectionMultiplexer;
+            _redisConnectionString = redisConnectionString;
             _regionName = regionName;
             _datasetCount = datasetCount;
             _dimensionCount = dimensionCount;
@@ -52,13 +54,15 @@ namespace AppFabricTest
 
         protected void FlushCache()
         {
-            //TODO: Flush cache implementation
+            foreach (var endPoint in _redisConnectionMultiplexer.GetEndPoints())
+            {
+                _redisConnectionMultiplexer.GetServer(endPoint).FlushAllDatabases();
+            }
         }
 
-        protected void PrepareClient()
+        public void PrepareClient()
         {
-            var config = new CacheConfiguration(_endPoint);
-            _myDefaultCache = new RedisCacheProvider(config);
+            _myDefaultCache = _redisConnectionMultiplexer.GetDatabase();
         }
 
         protected void RecordStatistics(List<long> addList, List<long> getAndRemoveList, List<long> memUsageList, string regionName = null)

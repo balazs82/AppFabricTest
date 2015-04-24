@@ -43,9 +43,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TagCache.Redis">
-      <HintPath>..\packages\TagCache.Redis.1.0.0.0\lib\net45\TagCache.Redis.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheBase.cs" />

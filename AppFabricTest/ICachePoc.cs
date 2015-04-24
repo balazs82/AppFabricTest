@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using TagCache.Redis;
+using StackExchange.Redis;
 
 namespace AppFabricTest
 {
     public interface ICachePoc: ICacheBenchmark
     {
-        void Initialize(RedisConnectionManager endPoint, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker);
+        void Initialize(ConnectionMultiplexer redisConnectionMultiplexer, string redisConnectionString, string regionName, int datasetCount, int dimensionCount, byte[] data, Dictionary<string, object> performanceTracker);
     }
 }

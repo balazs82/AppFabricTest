@@ -12,44 +12,52 @@ namespace AppFabricTest
             List<long> getAndRemoveList = new List<long>();
             List<long> memUsageList = new List<long>();
 
-            //List<DataCacheTag> datasetTags = new List<DataCacheTag>();
+            List<string> datasetTags = new List<string>();
 
-            //for (var i = 0; i < _datasetCount; i++)
-            //{
-            //    datasetTags.Add(new DataCacheTag("Dataset" + i));
+            for (var i = 0; i < _datasetCount; i++)
+            {
+                datasetTags.Add("Dataset" + i);
+                
+                for (var j = 0; j < _dimensionCount; j++)
+                {
+                    string key = datasetTags[i] + "DimensionName" + j;
 
-            //    for (var j = 0; j < _dimensionCount; j++)
-            //    {
-            //        string key = datasetTags[i] + "DimensionName" + j;
+                    _stopWatch = Stopwatch.StartNew();
 
-            //        _stopWatch = Stopwatch.StartNew();
+                    _myDefaultCache.StringSet(key, _data);
+                    var addResult = _myDefaultCache.StringGet(key);
 
-            //        var addResult = _myDefaultCache.Add(key, _data, new List<DataCacheTag>() { datasetTags[i] }, _regionName);
+                    _stopWatch.Stop();
+                    addList.Add(_stopWatch.ElapsedMilliseconds);
 
-            //        _stopWatch.Stop();
-            //        addList.Add(_stopWatch.ElapsedMilliseconds);
+                    if (addResult.IsNull)
+                    {
+                        Console.WriteLine("**FAIL----->Add-Object did not add to cache - FAIL");
+                    }
+                    else
+                    {
+                        _myDefaultCache.SetAdd(datasetTags[i], key);
+                    }
+                }
+            }
 
-            //        if (addResult == null)
-            //        {
-            //            Console.WriteLine("**FAIL----->Add-Object did not add to cache - FAIL");
-            //        }
-            //    }
-            //}
+            var v = _myDefaultCache.StringGet("Dataset0DimensionName0");
 
-            //foreach (DataCacheTag dataCacheTag in datasetTags)
-            //{
-            //    long bytes1 = GC.GetTotalMemory(false);
-            //    _stopWatch = Stopwatch.StartNew();
+            foreach (string dataCacheTag in datasetTags)
+            {
+                long bytes1 = GC.GetTotalMemory(false);
+                _stopWatch = Stopwatch.StartNew();
 
-            //    foreach (var item in _myDefaultCache.GetObjectsByTag(dataCacheTag, _regionName))
-            //    {
-            //        _myDefaultCache.Remove(item.Key, _regionName);
-            //    }
+                foreach (var key in _myDefaultCache.SetMembers(dataCacheTag))
+                {
+                    _myDefaultCache.KeyDeleteAsync((string)key);
+                }
+                _myDefaultCache.KeyDeleteAsync(dataCacheTag);
 
-            //    _stopWatch.Stop();
-            //    getAndRemoveList.Add(_stopWatch.ElapsedMilliseconds);
-            //    memUsageList.Add(GC.GetTotalMemory(false) - bytes1);
-            //}
+                _stopWatch.Stop();
+                getAndRemoveList.Add(_stopWatch.ElapsedMilliseconds);
+                memUsageList.Add(GC.GetTotalMemory(false) - bytes1);
+            }
 
             RecordStatistics(addList, getAndRemoveList, memUsageList);
         }

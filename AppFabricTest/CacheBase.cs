@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TagCache.Redis;
+using StackExchange.Redis;
 
 namespace AppFabricTest
 {
@@ -12,13 +12,15 @@ namespace AppFabricTest
         private readonly int _dimensionCount = 1;
         private readonly byte[] _data = new byte[300000];
         private readonly ICachePoc _cacheStrategy;
-        private readonly RedisConnectionManager _endPoint;
+        private readonly ConnectionMultiplexer _redisConnectionMultiplexer;
+        private readonly string _redisConnectionString;
                 
         private Dictionary<string, Dictionary<string, object>> _performanceTracker;
 
-        public CacheBenchmark(ICachePoc cacheStrategy, RedisConnectionManager endPoint, int datasetCount, int dimensionCount, Dictionary<string, Dictionary<string, object>> performanceTracker)
+        public CacheBenchmark(ICachePoc cacheStrategy, ConnectionMultiplexer redisConnectionMultiplexer, string redisConnectionString, int datasetCount, int dimensionCount, Dictionary<string, Dictionary<string, object>> performanceTracker)
         {
-            _endPoint = endPoint;
+            _redisConnectionMultiplexer = redisConnectionMultiplexer;
+            _redisConnectionString = redisConnectionString;
             _datasetCount = datasetCount;
             _dimensionCount = dimensionCount;
             _cacheStrategy = cacheStrategy;
@@ -33,7 +35,7 @@ namespace AppFabricTest
                 perfTracker = _performanceTracker[cacheStrategy.GetType().Name];
             }
 
-            _cacheStrategy.Initialize(endPoint, _regionName, _datasetCount, _dimensionCount, _data, perfTracker);
+            _cacheStrategy.Initialize(redisConnectionMultiplexer, redisConnectionString, _regionName, _datasetCount, _dimensionCount, _data, perfTracker);
         }
 
         public void DoWork()

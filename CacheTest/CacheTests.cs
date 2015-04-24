@@ -4,16 +4,26 @@ using AppFabricTest;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using TagCache.Redis;
+using StackExchange.Redis;
 
 namespace CacheTest
 {
     [TestClass]
     public class CacheTests
     {
-        private RedisConnectionManager Endpoint
+        private string redisConnectionString
         {
-            get { return new RedisConnectionManager("127.0.0.1:6379"); }
+            get
+            {
+                return "127.0.0.1:6379,allowAdmin=true";
+                //return "127.0.0.1:6379";
+                //return "127.0.0.1:6379,127.0.0.1:6380";
+            }
+        }
+
+        private ConnectionMultiplexer redisConnectionMultiplexer
+        {
+            get { return ConnectionMultiplexer.Connect(redisConnectionString); }
         }
 
         [TestMethod]
@@ -24,21 +34,21 @@ namespace CacheTest
 
             Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
 
-            CacheBenchmark benchmark1 = new CacheBenchmark(new CachePocUsingTags(), Endpoint, datasetCount, dimensionCount, performanceTracker);
+            CacheBenchmark benchmark1 = new CacheBenchmark(new CachePocUsingTags(), redisConnectionMultiplexer, redisConnectionString, datasetCount, dimensionCount, performanceTracker);
             benchmark1.DoWork();
-
+            
             ComparedResultsToOutput(performanceTracker);
         }
 
-        [TestMethod]
-        public void CachePocTest_NamedRegionUsingTags()
-        {
-            Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
-            CacheBenchmark benchmark = new CacheBenchmark(new CachePocUsingTags(), Endpoint, 10, 10, performanceTracker);
-            benchmark.DoWork();
+        //[TestMethod]
+        //public void CachePocTest_NamedRegionUsingTags()
+        //{
+        //    Dictionary<string, Dictionary<string, object>> performanceTracker = new Dictionary<string, Dictionary<string, object>>();
+        //    CacheBenchmark benchmark = new CacheBenchmark(new CachePocUsingTags(), redisConnectionMultiplexer, redisConnectionString, 10, 10, performanceTracker);
+        //    benchmark.DoWork();
 
-            ResultsToOutput(performanceTracker);
-        }
+        //    ResultsToOutput(performanceTracker);
+        //}
 
         private void ResultsToOutput(Dictionary<string, Dictionary<string, object>> performanceTracker)
         {
